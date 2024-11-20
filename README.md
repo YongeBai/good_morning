@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Good Morning
 
-## Getting Started
+## Overview
+A real-time voice and text chatbot using Next.js, featuring automatic speech-to-text, text-to-speech, and AI responses. The bot automatically responds to user input after detecting silence or receiving text input.
 
-First, run the development server:
+## Key Technologies
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Groq (via Vercel AI SDK) for AI responses
+Deepgram WebSocket API for real-time transcription
+11Labs for text-to-speech
+Socket.io for real-time communication
+Shadcn/ui for component library
+MediaStream API for voice capture
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Core Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Voice Input
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Real-time speech capture using MediaStream API
+Streaming transcription via Deepgram WebSocket
+3-second silence detection for automatic response triggering
+No interruption handling required - bot continues speaking
 
-## Learn More
+Text Input
 
-To learn more about Next.js, take a look at the following resources:
+Standard text input field
+Immediate bot response upon submission
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Chat Memory
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Server-side conversation history
+Maximum 10 responses before reset
+No persistence required
 
-## Deploy on Vercel
+Bot Responses
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Non-streaming Groq responses
+Automatic 11Labs TTS playback
+50% chance of affirmative responses (e.g. "uh huh", "mm hmm", "I see") between user sentences, not sent to LLM only for TTS
+Visual indication during TTS playback
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
+Copy.
+├── app
+│   ├── api
+│   │   ├── chat
+│   │   │   └── route.ts         # Groq handler
+│   │   └── speech
+│   │       └── route.ts         # 11Labs TTS endpoint
+│   ├── layout.tsx
+│   └── page.tsx
+├── components
+│   ├── chat-container.tsx       # Main chat UI
+│   ├── chat-message.tsx         # Message bubbles
+│   ├── tts-indicator.tsx        # Speaking status
+│   ├── input
+│   │   ├── text-input.tsx       # Text input
+│   │   └── voice-input.tsx      # Voice capture + silence detection
+│   └── ui/                      # Shadcn components
+├── lib
+│   ├── deepgram.ts             # Deepgram WebSocket client
+│   ├── groq.ts                 # Groq client setup
+│   ├── elevenlabs.ts           # TTS utilities
+│   ├── types.ts                # Type definitions
+│   └── utils.ts                # Helper functions
+└── config.ts                   # API keys and constants
+
+## Technical Requirements
+
+Voice Processing
+
+3-second silence detection threshold
+Real-time transcription display
+Automatic TTS playback
+No need for manual TTS controls
+
+Memory Management
+
+Server-side conversation tracking
+Reset after 10 responses
+No persistence between sessions
+
+UI/UX
+
+Right-aligned user messages (text/voice)
+Left-aligned bot messages
+Visual TTS playback indicator
+Recording status indicator
+Simple chat interface
+Input method toggle (voice/text)
+
+## API Keys Required
+
+Groq API key
+Deepgram API key
+11Labs API key
+
+## Limitations/Constraints
+
+No interruption handling
+No persistence between sessions
+Maximum 10 responses before reset
+No manual TTS controls needed
+Single conversation thread only
