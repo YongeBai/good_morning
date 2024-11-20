@@ -59,7 +59,6 @@ Copy.
 │   └── ui/                      # Shadcn components
 ├── lib
 │   ├── deepgram.ts             # Deepgram WebSocket client
-│   ├── groq.ts                 # Groq client setup
 │   ├── elevenlabs.ts           # TTS utilities
 │   ├── types.ts                # Type definitions
 │   └── utils.ts                # Helper functions
