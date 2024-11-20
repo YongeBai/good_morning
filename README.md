@@ -1,7 +1,7 @@
 # Good Morning
 
 ## Overview
-A real-time voice and text chatbot using Next.js, featuring automatic speech-to-text, text-to-speech, and AI responses. The bot automatically responds to user input after detecting silence or receiving text input.
+A real-time voice and text chatbot using Next.js, featuring automatic speech-to-text, text-to-speech, and AI responses. The bot automatically responds to user input after detecting silence if receiving voice input or after receiving text input.
 
 ## Key Technologies
 
@@ -88,12 +88,6 @@ Visual TTS playback indicator
 Recording status indicator
 Simple chat interface
 Input method toggle (voice/text)
-
-## API Keys Required
-
-Groq API key
-Deepgram API key
-11Labs API key
 
 ## Limitations/Constraints
 
