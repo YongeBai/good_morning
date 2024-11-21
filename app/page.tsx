@@ -62,12 +62,20 @@ export default function Page() {
 
       if (audioRef.current) {
         audioRef.current.src = audioUrl;
-        await audioRef.current.play();
+        await new Promise((resolve) => {
+          if (audioRef.current) {
+            audioRef.current.onended = resolve;
+            audioRef.current.play();
+          }
+        });
       }
     } catch (error) {
       console.error('TTS error:', error);
     } finally {
       setIsSpeaking(false);
+      if (audioRef.current?.src) {
+        URL.revokeObjectURL(audioRef.current.src);
+      }
     }
   };
 
@@ -178,6 +186,7 @@ export default function Page() {
               onChange={handleInputChange}
               placeholder="Type your message..."
               className="flex-1"
+              disabled={isSpeaking}
             />
             <Button type="submit" size="icon">
               <Send className="h-4 w-4" />
