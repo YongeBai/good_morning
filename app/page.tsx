@@ -119,9 +119,9 @@ export default function Page() {
   }
 
   return (
-    <div className="flex h-screen p-4 dark">
-      <Card className="w-full max-w-2xl mx-auto flex flex-col h-full bg-background text-foreground">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+    <div className="flex h-screen">
+      <Card className="w-full max-w-2xl mx-auto flex flex-col h-full rounded-none">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 shrink-0">
           <div className="flex items-center gap-4">
             <CardTitle className="text-xl font-bold">Tech Support Chat</CardTitle>
             <Button
@@ -144,8 +144,8 @@ export default function Page() {
           </Button>
         </CardHeader>
 
-        <CardContent className="flex-1 flex flex-col gap-4">
-          <ScrollArea className="flex-1 pr-4">
+        <CardContent className="flex flex-col flex-1 overflow-hidden p-4">
+          <ScrollArea className="flex-1 pr-4 -mr-4">
             <div className="space-y-4">
               {messages.map(message => (
                 <div
@@ -161,7 +161,7 @@ export default function Page() {
                     <div className="font-semibold mb-1 text-sm">
                       {message.role === 'user' ? 'You' : 'Support Agent'}
                     </div>
-                    <div className="text-sm leading-relaxed">
+                    <div className="text-sm leading-relaxed break-words">
                       {message.content}
                     </div>
                   </div>
@@ -171,7 +171,7 @@ export default function Page() {
             </div>
           </ScrollArea>
 
-          <form onSubmit={handleSubmit} className="flex gap-2">
+          <form onSubmit={handleSubmit} className="flex gap-2 mt-4">
             <Input
               name="prompt"
               value={input}
