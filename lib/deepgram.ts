@@ -7,14 +7,14 @@ export const createLiveTranscription = async (
     const options = {
         model: "nova-2",
         language: "en-US",
-        // smart_format: true,
-        // interim_results: true,
+        // smart_format: true, // this mucks up the transcript makes the punctuation weird
+        // interim_results: true, // this mucks up the transcript
         // utterance_end_ms: 2000,        
         punctuate: true,
         // encoding: "linear16",
         // sample_rate: 48000,
         channels: 1,
-        endpointing: 100
+        endpointing: 100 // low endpointing to get more frequent transcript updates, going use affimration if ends with punctuation
     };
 
     // Create Deepgram connection

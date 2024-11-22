@@ -21,9 +21,12 @@ export default function Page() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [audioEnabled, setAudioEnabled] = useState(true);
+  // const [audioEnabled, setAudioEnabled] = useState(true);
+  const [audioEnabled, setAudioEnabled] = useState(false);
+
   const [chatStarted, setChatStarted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [currentTranscript, setCurrentTranscript] = useState('');
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -95,8 +98,26 @@ export default function Page() {
 
   const handleTranscript = (transcript: string) => {
     console.log('Page received transcript:', transcript);
-    handleInputChange({ target: { value: transcript } } as any);
+    setCurrentTranscript(prev => prev + ' ' + transcript);
   }
+
+  const handleRecordingToggle = () => {
+    if (isRecording) {
+      if (currentTranscript.trim()) {
+        handleInputChange({ target: { value: currentTranscript.trim() } } as any);
+
+        const formEvent = new Event('submit');
+        // formEvent.preventDefault = () => { };
+        handleSubmit(formEvent);
+        setCurrentTranscript('');
+      }
+    }
+    setIsRecording(!isRecording);
+  }
+
+  useEffect(() => {
+    console.log('Messages updated:', messages);
+  }, [messages]);
 
   if (!chatStarted) {
     return (
@@ -187,7 +208,7 @@ export default function Page() {
               type="button" 
               size="icon" 
               variant={isRecording ? "destructive" : "default"}
-              onClick={() => setIsRecording(!isRecording)}
+              onClick={handleRecordingToggle}
               disabled={isSpeaking}
             >
               <Mic className="h-4 w-4" />
