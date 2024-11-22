@@ -88,27 +88,37 @@ export default function Page() {
         body: JSON.stringify({ text }),
       });
 
-      if (!response.ok) throw new Error('TTS request failed');
+      if (!response.body) throw new Error('No response body');
 
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
+      // Create a new Audio Context
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const audioContext = new AudioContext();
+      
+      // Create audio buffer source
+      const source = audioContext.createBufferSource();
+      
+      // Get response as ArrayBuffer
+      const arrayBuffer = await response.arrayBuffer();
+      
+      // Decode the audio data
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      
+      // Connect the source to the buffer and context
+      source.buffer = audioBuffer;
+      source.connect(audioContext.destination);
+      
+      // Play the audio
+      source.start(0);
+      
+      // Clean up when done
+      source.onended = () => {
+        setIsSpeaking(false);
+        audioContext.close();
+      };
 
-      if (audioRef.current) {
-        audioRef.current.src = audioUrl;
-        await new Promise((resolve) => {
-          if (audioRef.current) {
-            audioRef.current.onended = resolve;
-            audioRef.current.play();
-          }
-        });
-      }
     } catch (error) {
       console.error('TTS error:', error);
-    } finally {
       setIsSpeaking(false);
-      if (audioRef.current?.src) {
-        URL.revokeObjectURL(audioRef.current.src);
-      }
     }
   };
 

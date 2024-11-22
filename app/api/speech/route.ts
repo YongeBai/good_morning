@@ -4,12 +4,20 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   try {
     const { text } = await req.json();
-    const audioContent = await createAudioStreamFromText(text);
+    const audioStream = await createAudioStreamFromText(text);
+    
+    // Collect all chunks first
+    const chunks: Buffer[] = [];
+    for await (const chunk of audioStream) {
+      chunks.push(Buffer.from(chunk));
+    }
+    
+    // Combine all chunks into a single buffer
+    const audioContent = Buffer.concat(chunks);
 
-    return new NextResponse(audioContent, {
+    return new Response(audioContent, {
       headers: {
         "Content-Type": "audio/mpeg",
-        "Content-Length": audioContent.length.toString(),
       },
     });
   } catch (error) {
