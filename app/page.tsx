@@ -170,7 +170,7 @@ export default function Page() {
     setCurrentTranscript(prev => prev + ' ' + transcript);
 
     if (
-      Math.random() > 0.3 &&
+      Math.random() > 0.4 &&
       transcript.length > 10 &&
       (transcript.includes('.') || transcript.includes('!') || transcript.includes('?') || transcript.includes(','))
     ) {

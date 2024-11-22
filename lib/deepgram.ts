@@ -15,7 +15,7 @@ export const createLiveTranscription = async (
         // encoding: "linear16",
         // sample_rate: 48000,
         channels: 1,
-        endpointing: 80 // low endpointing to get more frequent transcript updates, going use affimration if ends with punctuation
+        endpointing: 100 // low endpointing to get more frequent transcript updates, going use affimration if ends with punctuation
     };
 
     // Create Deepgram connection
@@ -67,6 +67,7 @@ export const createLiveTranscription = async (
     });
 
     connection.on(LiveTranscriptionEvents.Transcript, (data: DeepgramResponse) => {
+        console.log('Deepgram transcript:', JSON.stringify(data, null, 2));
         const transcript = data.channel.alternatives[0].transcript;
         if (transcript && transcript.trim()) {
             onTranscript(transcript);
