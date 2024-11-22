@@ -1,5 +1,6 @@
 'use client';
 
+import VoiceInput from "@/components/input/voice-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChat } from 'ai/react';
 import { Send, Trash2, Volume2, VolumeX, Mic } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import VoiceInput from "@/components/input/voice-input";
 
 export default function Page() {
   const { messages, input, handleInputChange, handleSubmit, setMessages } = useChat({
@@ -21,7 +21,7 @@ export default function Page() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(true);
   const [chatStarted, setChatStarted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
 
@@ -31,8 +31,8 @@ export default function Page() {
 
   const startChat = async () => {
     setChatStarted(true);
-    if (audioRef.current && audioEnabled) {
-      audioRef.current.src = '/opening_audio.mp3';
+    audioRef.current = new Audio('/opening_audio.mp3');
+    if (audioEnabled) {
       await audioRef.current.play();
     }
 
@@ -49,6 +49,14 @@ export default function Page() {
       setAudioEnabled(!audioRef.current.muted);
     }
   }
+  
+  const handleClearChat = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    startChat();
+  };
 
   const playTTS = async (text: string) => {
     if (!audioEnabled) return;
@@ -85,13 +93,6 @@ export default function Page() {
     }
   };
 
-  const handleClearChat = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-    startChat();
-  };
 
   if (!chatStarted) {
     return (
@@ -190,14 +191,16 @@ export default function Page() {
             <Button type="submit" size="icon" disabled={isRecording}>
               <Send className="h-4 w-4" />
             </Button>
-            {isRecording && (
-              <VoiceInput 
-                onTranscript={(text) => handleInputChange({ target: { value: text } } as any)}
-                isRecording={isRecording}
-                setIsRecording={setIsRecording}
-              />
-            )}
           </form>
+          
+          <VoiceInput 
+            onTranscript={(text) => {
+              console.log('Page received transcript:', text);
+              handleInputChange({ target: { value: text } } as any);
+            }}
+            isRecording={isRecording}
+            setIsRecording={setIsRecording}
+          />
         </CardContent>
       </Card>
       <audio ref={audioRef} onEnded={() => setIsSpeaking(false)} />
