@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChat } from 'ai/react';
 import { Send, Trash2, Volume2, VolumeX, Mic } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import VoiceInput from "@/components/input/voice-input";
 
 export default function Page() {
   const { messages, input, handleInputChange, handleSubmit, setMessages } = useChat({
@@ -20,12 +21,34 @@ export default function Page() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [audioEnabled, setAudioEnabled] = useState(true);
+  const [audioEnabled, setAudioEnabled] = useState(false);
   const [chatStarted, setChatStarted] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const startChat = async () => {
+    setChatStarted(true);
+    if (audioRef.current && audioEnabled) {
+      audioRef.current.src = '/opening_audio.mp3';
+      await audioRef.current.play();
+    }
+
+    setMessages([{
+      id: '1',
+      role: 'assistant',
+      content: 'Good morning sir, my name is Sundeep, this call may be recorded for quality assurance. How may I assist you today?'
+    }]);
+  }
+
+  const toggleAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.muted = !audioRef.current.muted;
+      setAudioEnabled(!audioRef.current.muted);
+    }
+  }
 
   const playTTS = async (text: string) => {
     if (!audioEnabled) return;
@@ -63,17 +86,11 @@ export default function Page() {
   };
 
   const handleClearChat = () => {
-    const initialMessage = {
-      id: '1',
-      role: 'assistant',
-      content: 'Good morning sir, my name is Sundeep, this call may be recorded for quality assurance. How may I assist you today?'
-    };
-    
-    setMessages([initialMessage]);
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
+    startChat();
   };
 
   if (!chatStarted) {
@@ -88,10 +105,7 @@ export default function Page() {
               Click below to start your conversation with our AI tech support agent
             </p>
             <Button 
-              onClick={() => {
-                setChatStarted(true);
-                handleClearChat();
-              }} 
+              onClick={startChat} 
               size="lg"
             >
               Start Chat
@@ -109,7 +123,7 @@ export default function Page() {
           <div className="flex items-center gap-4">
             <CardTitle className="text-xl font-bold">Tech Support Chat</CardTitle>
             <Button
-              onClick={() => setAudioEnabled(!audioEnabled)}
+              onClick={toggleAudio}
               variant="ghost"
               size="icon"
               className={audioEnabled ? 'text-green-500' : 'text-gray-500'}
@@ -162,11 +176,27 @@ export default function Page() {
               onChange={handleInputChange}
               placeholder="Type your message..."
               className="flex-1"
+              disabled={isSpeaking || isRecording}
+            />            
+            <Button 
+              type="button" 
+              size="icon" 
+              variant={isRecording ? "destructive" : "default"}
+              onClick={() => setIsRecording(!isRecording)}
               disabled={isSpeaking}
-            />
-            <Button type="submit" size="icon">
+            >
+              <Mic className="h-4 w-4" />
+            </Button>
+            <Button type="submit" size="icon" disabled={isRecording}>
               <Send className="h-4 w-4" />
             </Button>
+            {isRecording && (
+              <VoiceInput 
+                onTranscript={(text) => handleInputChange({ target: { value: text } } as any)}
+                isRecording={isRecording}
+                setIsRecording={setIsRecording}
+              />
+            )}
           </form>
         </CardContent>
       </Card>
