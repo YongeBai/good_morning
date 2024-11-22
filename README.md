@@ -29,8 +29,7 @@ Immediate bot response upon submission
 Chat Memory
 
 Server-side conversation history
-Maximum 10 responses before reset
-No persistence required
+
 
 Bot Responses
 
@@ -40,29 +39,41 @@ Automatic 11Labs TTS playback
 Visual indication during TTS playback
 
 ## Project Structure
-Copy.
+.
 ├── app
 │   ├── api
-│   │   ├── chat
-│   │   │   └── route.ts         # Groq handler
-│   │   └── speech
-│   │       └── route.ts         # 11Labs TTS endpoint
+│   ├── favicon.ico
+│   ├── fonts
+│   ├── globals.css
 │   ├── layout.tsx
 │   └── page.tsx
 ├── components
-│   ├── chat-container.tsx       # Main chat UI
-│   ├── chat-message.tsx         # Message bubbles
-│   ├── tts-indicator.tsx        # Speaking status
 │   ├── input
-│   │   ├── text-input.tsx       # Text input
-│   │   └── voice-input.tsx      # Voice capture + silence detection
-│   └── ui/                      # Shadcn components
+│   └── ui
+├── components.json
+├── frontend
 ├── lib
-│   ├── deepgram.ts             # Deepgram WebSocket client
-│   ├── elevenlabs.ts           # TTS utilities
-│   ├── types.ts                # Type definitions
-│   └── utils.ts                # Helper functions
-└── config.ts                   # API keys and constants
+│   ├── config.ts
+│   ├── deepgram.ts
+│   ├── elevenlabs.ts
+│   ├── types.ts
+│   └── utils.ts
+├── next.config.mjs
+├── next-env.d.ts
+├── package.json
+├── package-lock.json
+├── postcss.config.mjs
+├── public
+│   ├── affirmation_1.mp3
+│   ├── affirmation_2.mp3
+│   ├── affirmation_3.mp3
+│   ├── affirmation_4.mp3
+│   ├── affirmation_5.mp3
+│   ├── affirmation_6.mp3
+│   └── opening_audio.mp3
+├── README.md
+├── tailwind.config.ts
+└── tsconfig.json
 
 ## Technical Requirements
 
@@ -76,8 +87,7 @@ No need for manual TTS controls
 Memory Management
 
 Server-side conversation tracking
-Reset after 10 responses
-No persistence between sessions
+
 
 UI/UX
 
@@ -92,6 +102,4 @@ Input method toggle (voice/text)
 
 No interruption handling
 No persistence between sessions
-Maximum 10 responses before reset
-No manual TTS controls needed
 Single conversation thread only
