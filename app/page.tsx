@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChat } from 'ai/react';
-import { Send, Trash2, Volume2, VolumeX } from "lucide-react";
+import { Send, Trash2, Volume2, VolumeX, Mic } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 export default function Page() {
@@ -16,33 +16,16 @@ export default function Page() {
       }
     },
   });
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [isSpeaking, setIsSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [chatStarted, setChatStarted] = useState(false);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  const startChat = async () => {
-    setChatStarted(true);
-    const audio = new Audio('/opening_audio.mp3');
-    await audio.play();
-
-    setMessages([
-      {
-        id: '1',
-        role: 'assistant',
-        content: 'Good morning sir, my name is Sundeep, this call may be recorded for quality assurance. How may I assist you today?'
-      }
-    ]);
-  };
 
   const playTTS = async (text: string) => {
     if (!audioEnabled) return;
@@ -80,29 +63,16 @@ export default function Page() {
   };
 
   const handleClearChat = () => {
-    setMessages([
-      {
-        id: '1',
-        role: 'assistant',
-        content: 'Good morning sir, my name is Sundeep, this call may be recorded for quality assurance. How may I assist you today?'
-      }
-    ]);
+    const initialMessage = {
+      id: '1',
+      role: 'assistant',
+      content: 'Good morning sir, my name is Sundeep, this call may be recorded for quality assurance. How may I assist you today?'
+    };
+    
+    setMessages([initialMessage]);
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
-    }
-    const audio = new Audio('/opening_audio.mp3');
-    if (audioEnabled) {
-      audio.play();
-    }
-  };
-
-  const toggleAudio = () => {
-    setAudioEnabled(!audioEnabled);
-    if (!audioEnabled) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
     }
   };
 
@@ -117,7 +87,13 @@ export default function Page() {
             <p className="mb-4 text-muted-foreground">
               Click below to start your conversation with our AI tech support agent
             </p>
-            <Button onClick={startChat} size="lg">
+            <Button 
+              onClick={() => {
+                setChatStarted(true);
+                handleClearChat();
+              }} 
+              size="lg"
+            >
               Start Chat
             </Button>
           </CardContent>
@@ -129,11 +105,11 @@ export default function Page() {
   return (
     <div className="flex h-screen">
       <Card className="w-full max-w-2xl mx-auto flex flex-col h-full rounded-none">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 shrink-0">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div className="flex items-center gap-4">
             <CardTitle className="text-xl font-bold">Tech Support Chat</CardTitle>
             <Button
-              onClick={toggleAudio}
+              onClick={() => setAudioEnabled(!audioEnabled)}
               variant="ghost"
               size="icon"
               className={audioEnabled ? 'text-green-500' : 'text-gray-500'}
