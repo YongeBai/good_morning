@@ -7,14 +7,14 @@ export const createLiveTranscription = async (
     const options = {
         model: "nova-2",
         language: "en-US",
-        smart_format: true,
-        interim_results: true,
-        utterance_end_ms: 2000,        
+        // smart_format: true,
+        // interim_results: true,
+        // utterance_end_ms: 2000,        
         punctuate: true,
         // encoding: "linear16",
         // sample_rate: 48000,
         channels: 1,
-        endpointing: 2000
+        endpointing: 100
     };
 
     // Create Deepgram connection
