@@ -10,7 +10,7 @@ import { Send, Trash2, Volume2, VolumeX, Mic } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 export default function Page() {
-  const { messages, input, handleInputChange, handleSubmit, setMessages } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, setMessages, append } = useChat({
     onFinish: async (message) => {
       if (message.role === 'assistant') {
         await playTTS(message.content);
@@ -18,11 +18,21 @@ export default function Page() {
     },
   });
 
+  const AFFIRMATIONS = [
+    '/affirmation_1.mp3',
+    '/affirmation_2.mp3',
+    '/affirmation_3.mp3',
+    '/affirmation_4.mp3',
+    '/affirmation_5.mp3',
+    '/affirmation_6.mp3',
+  ];
+  const openingAudioPath = '/opening_audio.mp3';
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  // const [audioEnabled, setAudioEnabled] = useState(true);
-  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(true);
+  // const [audioEnabled, setAudioEnabled] = useState(false);
 
   const [chatStarted, setChatStarted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -34,7 +44,7 @@ export default function Page() {
 
   const startChat = async () => {
     setChatStarted(true);
-    audioRef.current = new Audio('/opening_audio.mp3');
+    audioRef.current = new Audio(openingAudioPath);
     if (audioEnabled) {
       await audioRef.current.play();
     }
@@ -96,28 +106,36 @@ export default function Page() {
     }
   };
 
+  const playAffirmation = async () => {
+    if (!audioEnabled) return;
+    const affirmation = AFFIRMATIONS[Math.floor(Math.random() * AFFIRMATIONS.length)];
+    const audio = new Audio(affirmation);
+    audio.volume = 0.5;
+    await audio.play();
+  }
+
   const handleTranscript = (transcript: string) => {
     console.log('Page received transcript:', transcript);
     setCurrentTranscript(prev => prev + ' ' + transcript);
+
+    if ((transcript.includes('.') || transcript.includes('!') || transcript.includes('?') || transcript.includes(',')) && Math.random() > 0.3) {
+      playAffirmation();
+    }
   }
 
   const handleRecordingToggle = () => {
     if (isRecording) {
       if (currentTranscript.trim()) {
-        handleInputChange({ target: { value: currentTranscript.trim() } } as any);
-
-        const formEvent = new Event('submit');
-        // formEvent.preventDefault = () => { };
-        handleSubmit(formEvent);
+        append({
+          role: 'user',
+          content: currentTranscript.trim()
+        });
+        
         setCurrentTranscript('');
       }
     }
     setIsRecording(!isRecording);
   }
-
-  useEffect(() => {
-    console.log('Messages updated:', messages);
-  }, [messages]);
 
   if (!chatStarted) {
     return (
@@ -141,7 +159,7 @@ export default function Page() {
       </div>
     );
   }
-
+  
   return (
     <div className="flex h-screen">
       <Card className="w-full max-w-2xl mx-auto flex flex-col h-full rounded-none">

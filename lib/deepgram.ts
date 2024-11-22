@@ -14,7 +14,7 @@ export const createLiveTranscription = async (
         // encoding: "linear16",
         // sample_rate: 48000,
         channels: 1,
-        endpointing: 100 // low endpointing to get more frequent transcript updates, going use affimration if ends with punctuation
+        endpointing: 80 // low endpointing to get more frequent transcript updates, going use affimration if ends with punctuation
     };
 
     // Create Deepgram connection
