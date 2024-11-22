@@ -107,7 +107,7 @@ export default function Page() {
   };
 
   const playAffirmation = async () => {
-    if (!audioEnabled) return;
+    // if (!audioEnabled) return;
     const affirmation = AFFIRMATIONS[Math.floor(Math.random() * AFFIRMATIONS.length)];
     const audio = new Audio(affirmation);
     audio.volume = 0.5;
@@ -118,7 +118,11 @@ export default function Page() {
     console.log('Page received transcript:', transcript);
     setCurrentTranscript(prev => prev + ' ' + transcript);
 
-    if ((transcript.includes('.') || transcript.includes('!') || transcript.includes('?') || transcript.includes(',')) && Math.random() > 0.3) {
+    if (
+      Math.random() > 0.3 &&
+      transcript.length > 10 &&
+      (transcript.includes('.') || transcript.includes('!') || transcript.includes('?') || transcript.includes(','))
+    ) {
       playAffirmation();
     }
   }
