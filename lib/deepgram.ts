@@ -10,8 +10,8 @@ export const createLiveTranscription = async (
         smart_format: true,
         interim_results: true,
         punctuate: true,
-        encoding: "linear16",
-        sample_rate: 48000,
+        // encoding: "linear16",
+        // sample_rate: 48000,
         channels: 1,
     };
 
@@ -19,17 +19,25 @@ export const createLiveTranscription = async (
     const deepgram = createClient(config.deepgram.apiKey);
     const connection = deepgram.listen.live(options);
 
+    // continueously send keep alive messages to keep the connection alive
+    const keepAliveInterval = setInterval(() => {
+        connection.keepAlive();
+    }, 10000);
+
     // Get microphone stream with specific constraints
     const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
             channelCount: 1,
-            sampleRate: 48000,
+            // sampleRate: 48000,
+            echoCancellation: true,
+            noiseSuppression: true,
         }
     });
 
     // Create MediaRecorder with specific MIME type
     const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
+        mimeType: 'audio/webm;codecs=opus',
+        bitsPerSecond: 16000
     });
 
     // Connect them together
@@ -54,14 +62,9 @@ export const createLiveTranscription = async (
     });
 
     connection.on(LiveTranscriptionEvents.Transcript, (data: any) => {
-        console.log('Raw Deepgram response:', JSON.stringify(data, null, 2));
-
         const transcript = data.channel.alternatives[0].transcript;
         if (transcript && transcript.trim()) {
-            console.log('Got transcript:', transcript);
             onTranscript(transcript);
-        } else {
-            console.log('Empty transcript received');
         }
     });
 
