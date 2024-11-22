@@ -35,14 +35,20 @@ export default function Page() {
   const openingAudioPath = '/opening_audio.mp3';
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null); // used for static audio files
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(true);
-  // const [audioEnabled, setAudioEnabled] = useState(false);
 
   const [chatStarted, setChatStarted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [currentTranscript, setCurrentTranscript] = useState('');
+
+  const [audioSource, setAudioSource] = useState<AudioBufferSourceNode | null>(null); // Used for 11labs streaming
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [startedAt, setStartedAt] = useState<number>(0);
+  const [pausedAt, setPausedAt] = useState<number>(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -50,8 +56,8 @@ export default function Page() {
 
   const startChat = async () => {
     setChatStarted(true);
-    audioRef.current = new Audio(openingAudioPath);
-    if (audioEnabled) {
+    if (audioEnabled && !audioRef.current) {
+      audioRef.current = new Audio(openingAudioPath);
       await audioRef.current.play();
     }
 
@@ -63,17 +69,31 @@ export default function Page() {
   }
 
   const toggleAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.muted = !audioRef.current.muted;
-      setAudioEnabled(!audioRef.current.muted);
+    if (audioContext && audioSource) {
+      if (isPlaying) {
+        audioContext.suspend();
+        setPausedAt(audioContext.currentTime);
+      } else {
+        audioContext.resume();
+        setStartedAt(startedAt + (audioContext.currentTime - pausedAt));
+      }
+      setIsPlaying(!isPlaying);
     }
-  }
-  
+    setAudioEnabled(!audioEnabled);
+  };
+
   const handleClearChat = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+    if (audioContext) {
+      audioContext.close();
+      setAudioContext(null);
     }
+    if (audioSource) {
+      audioSource.stop();
+      setAudioSource(null);
+    }
+    setStartedAt(0);
+    setPausedAt(0);
+    setIsPlaying(false);
     startChat();
   };
 
@@ -90,40 +110,55 @@ export default function Page() {
 
       if (!response.body) throw new Error('No response body');
 
-      // Create a new Audio Context
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      const audioContext = new AudioContext();
-      
-      // Create audio buffer source
-      const source = audioContext.createBufferSource();
-      
+      // Create or reuse Audio Context
+      let ctx = audioContext;
+      if (!ctx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        ctx = new AudioContext();
+        setAudioContext(ctx);
+      }
+
+      // Stop any existing audio
+      if (audioSource) {
+        audioSource.stop();
+        setAudioSource(null);
+      }
+
+      // Create new audio buffer source
+      const source = ctx.createBufferSource();
+      setAudioSource(source);
+
       // Get response as ArrayBuffer
       const arrayBuffer = await response.arrayBuffer();
-      
+
       // Decode the audio data
-      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-      
+      const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+
       // Connect the source to the buffer and context
       source.buffer = audioBuffer;
-      source.connect(audioContext.destination);
-      
+      source.connect(ctx.destination);
+
       // Play the audio
       source.start(0);
-      
+      setStartedAt(ctx.currentTime);
+      setIsPlaying(true);
+
       // Clean up when done
       source.onended = () => {
         setIsSpeaking(false);
-        audioContext.close();
+        setIsPlaying(false);
+        setAudioSource(null);
       };
 
     } catch (error) {
       console.error('TTS error:', error);
       setIsSpeaking(false);
+      setIsPlaying(false);
     }
   };
 
   const playAffirmation = async () => {
-    // if (!audioEnabled) return;
+    if (!audioEnabled) return;
     const affirmation = AFFIRMATIONS[Math.floor(Math.random() * AFFIRMATIONS.length)];
     const audio = new Audio(affirmation);
     audio.volume = 0.5;
@@ -150,7 +185,7 @@ export default function Page() {
           role: 'user',
           content: currentTranscript.trim()
         });
-        
+
         setCurrentTranscript('');
       }
     }
@@ -168,8 +203,8 @@ export default function Page() {
             <p className="mb-4 text-muted-foreground">
               Click below to start your conversation with our AI tech support agent
             </p>
-            <Button 
-              onClick={startChat} 
+            <Button
+              onClick={startChat}
               size="lg"
             >
               Start Chat
@@ -179,7 +214,7 @@ export default function Page() {
       </div>
     );
   }
-  
+
   return (
     <div className="flex h-screen">
       <Card className="w-full max-w-2xl mx-auto flex flex-col h-full rounded-none">
@@ -216,8 +251,8 @@ export default function Page() {
                 >
                   <div
                     className={`rounded-lg px-4 py-2 max-w-[80%] ${message.role === 'user'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-secondary text-secondary-foreground'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-secondary-foreground'
                       }`}
                   >
                     <div className="font-semibold mb-1 text-sm">
@@ -241,10 +276,10 @@ export default function Page() {
               placeholder="Type your message..."
               className="flex-1"
               disabled={isSpeaking || isRecording}
-            />            
-            <Button 
-              type="button" 
-              size="icon" 
+            />
+            <Button
+              type="button"
+              size="icon"
               variant={isRecording ? "destructive" : "default"}
               onClick={handleRecordingToggle}
               disabled={isSpeaking}
@@ -255,8 +290,8 @@ export default function Page() {
               <Send className="h-4 w-4" />
             </Button>
           </form>
-          
-          <VoiceInput 
+
+          <VoiceInput
             onTranscript={handleTranscript}
             isRecording={isRecording}
             setIsRecording={setIsRecording}
