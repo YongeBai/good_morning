@@ -1,5 +1,6 @@
 import { createClient, LiveTranscriptionEvents } from "@deepgram/sdk";
 import { config } from "./config";
+import { DeepgramResponse } from "./types";
 
 export const createLiveTranscription = async (
     onTranscript: (transcript: string) => void
@@ -52,7 +53,9 @@ export const createLiveTranscription = async (
     // Setup event handlers
     connection.on(LiveTranscriptionEvents.Open, () => {
         console.log('Deepgram connection opened');
-        mediaRecorder.start(300);
+        if (mediaRecorder.state !== 'recording') {
+            mediaRecorder.start(300);
+        }
     });
 
     connection.on(LiveTranscriptionEvents.Error, (error) => {
@@ -63,7 +66,7 @@ export const createLiveTranscription = async (
         console.log('Deepgram connection closed');
     });
 
-    connection.on(LiveTranscriptionEvents.Transcript, (data: any) => {
+    connection.on(LiveTranscriptionEvents.Transcript, (data: DeepgramResponse) => {
         const transcript = data.channel.alternatives[0].transcript;
         if (transcript && transcript.trim()) {
             onTranscript(transcript);
@@ -82,14 +85,17 @@ export const createLiveTranscription = async (
         if (mediaRecorder.state === 'paused') {
             mediaRecorder.resume();
         } else if (mediaRecorder.state === 'inactive') {
-            mediaRecorder.start(100);
+            mediaRecorder.start(300);
         }
     };
 
     // Final cleanup for component unmount
     const cleanup = () => {
         console.log('Final cleanup');
-        mediaRecorder.stop();
+        clearInterval(keepAliveInterval);
+        if (mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+        }
         stream.getTracks().forEach(track => track.stop());
         connection.disconnect();
     };

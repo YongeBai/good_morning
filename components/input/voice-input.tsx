@@ -16,31 +16,28 @@ export default function VoiceInput({ isRecording, setIsRecording, onTranscript }
         cleanup: () => void;
     } | null>(null);
     
-  const [isInitialized, setIsInitialized] = useState(false);
-  useEffect(() => {
+    const [isInitialized, setIsInitialized] = useState(false);
+
+    useEffect(() => {
+        // Check if we're in a browser environment
+        if (typeof window === 'undefined') return;
+
         if (!isInitialized && isRecording) {
-          const initializeRecording = async () => {
-              try {
-                  const controls = await createLiveTranscription((transcript) => {
-                      onTranscript(transcript);
-                  });
-                  controlsRef.current = controls;
-                  setIsInitialized(true);
-              } catch (error) {
-                  console.error('Failed to initialize recording:', error);
-                  setIsRecording(false);
-              }
-          };
-          initializeRecording();
-          
-          // return () => {
-          //     if (controlsRef.current) {
-          //         controlsRef.current.cleanup();
-          //         controlsRef.current = null;
-          //     }
-        // };
-      }
-    }, [isRecording, isInitialized]);
+            const initializeRecording = async () => {
+                try {
+                    const controls = await createLiveTranscription((transcript) => {
+                        onTranscript(transcript);
+                    });
+                    controlsRef.current = controls;
+                    setIsInitialized(true);
+                } catch (error) {
+                    console.error('Failed to initialize recording:', error);
+                    setIsRecording(false);
+                }
+            };
+            initializeRecording();
+        }
+    }, [isRecording, isInitialized, onTranscript, setIsRecording]);
 
     useEffect(() => {
         if (controlsRef.current && isInitialized) {
@@ -50,7 +47,17 @@ export default function VoiceInput({ isRecording, setIsRecording, onTranscript }
                 controlsRef.current.pause();
             }
         }
-    }, [isRecording]);
+    }, [isRecording, isInitialized]);
+
+    // // Cleanup effect
+    // useEffect(() => {
+    //     return () => {
+    //         if (controlsRef.current) {
+    //             controlsRef.current.cleanup();
+    //             controlsRef.current = null;
+    //         }
+    //     };
+    // }, []);
 
     return null;
 } 
