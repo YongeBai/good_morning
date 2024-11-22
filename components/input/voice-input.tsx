@@ -17,8 +17,7 @@ export default function VoiceInput({ isRecording, setIsRecording, onTranscript }
     } | null>(null);
     
   const [isInitialized, setIsInitialized] = useState(false);
-
-    useEffect(() => {
+  useEffect(() => {
         if (!isInitialized && isRecording) {
           const initializeRecording = async () => {
               try {
