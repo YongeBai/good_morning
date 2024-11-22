@@ -9,10 +9,12 @@ export const createLiveTranscription = async (
         language: "en-US",
         smart_format: true,
         interim_results: true,
+        utterance_end_ms: 2000,        
         punctuate: true,
         // encoding: "linear16",
         // sample_rate: 48000,
         channels: 1,
+        endpointing: 2000
     };
 
     // Create Deepgram connection
@@ -37,7 +39,7 @@ export const createLiveTranscription = async (
     // Create MediaRecorder with specific MIME type
     const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm;codecs=opus',
-        bitsPerSecond: 16000
+        bitsPerSecond: 160000
     });
 
     // Connect them together
@@ -50,7 +52,7 @@ export const createLiveTranscription = async (
     // Setup event handlers
     connection.on(LiveTranscriptionEvents.Open, () => {
         console.log('Deepgram connection opened');
-        mediaRecorder.start(100);
+        mediaRecorder.start(300);
     });
 
     connection.on(LiveTranscriptionEvents.Error, (error) => {

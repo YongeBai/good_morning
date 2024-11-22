@@ -22,7 +22,6 @@ export default function VoiceInput({ isRecording, setIsRecording, onTranscript }
           const initializeRecording = async () => {
               try {
                   const controls = await createLiveTranscription((transcript) => {
-                      console.log('VoiceInput received transcript:', transcript);
                       onTranscript(transcript);
                   });
                   controlsRef.current = controls;

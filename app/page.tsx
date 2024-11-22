@@ -93,6 +93,10 @@ export default function Page() {
     }
   };
 
+  const handleTranscript = (transcript: string) => {
+    console.log('Page received transcript:', transcript);
+    handleInputChange({ target: { value: transcript } } as any);
+  }
 
   if (!chatStarted) {
     return (
@@ -194,10 +198,7 @@ export default function Page() {
           </form>
           
           <VoiceInput 
-            onTranscript={(text) => {
-              console.log('Page received transcript:', text);
-              handleInputChange({ target: { value: text } } as any);
-            }}
+            onTranscript={handleTranscript}
             isRecording={isRecording}
             setIsRecording={setIsRecording}
           />
