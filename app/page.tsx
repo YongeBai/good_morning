@@ -269,26 +269,40 @@ export default function Page() {
           </ScrollArea>
 
           <form onSubmit={handleSubmit} className="flex gap-2 mt-4">
-            <Input
-              name="prompt"
-              value={input}
-              onChange={handleInputChange}
-              placeholder="Type your message..."
-              className="flex-1"
-              disabled={isSpeaking || isRecording}
-            />
-            <Button
-              type="button"
-              size="icon"
-              variant={isRecording ? "destructive" : "default"}
-              onClick={handleRecordingToggle}
-              disabled={isSpeaking}
-            >
-              <Mic className="h-4 w-4" />
-            </Button>
-            <Button type="submit" size="icon" disabled={isRecording}>
-              <Send className="h-4 w-4" />
-            </Button>
+            {isRecording ? (
+              <Button 
+                type="button"
+                className="flex-1"
+                variant="destructive"
+                onClick={handleRecordingToggle}
+              >
+                <Mic className="h-4 w-4 mr-2" />
+                Finished Speaking
+              </Button>
+            ) : (
+              <>
+                <Input
+                  name="prompt"
+                  value={input}
+                  onChange={handleInputChange}
+                  placeholder="Type your message..."
+                  className="flex-1"
+                  disabled={isSpeaking}
+                />
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="default"
+                  onClick={handleRecordingToggle}
+                  disabled={isSpeaking}
+                >
+                  <Mic className="h-4 w-4" />
+                </Button>
+                <Button type="submit" size="icon" disabled={isRecording}>
+                  <Send className="h-4 w-4" />
+                </Button>
+              </>
+            )}
           </form>
 
           <VoiceInput
